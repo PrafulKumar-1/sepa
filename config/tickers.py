@@ -1,16 +1,16 @@
 # config/tickers.py
 
 # A list of tickers to screen.
-# Make sure this list is not empty and contains valid symbols.
+# Use this test list to verify the screener is working.
 TICKER_UNIVERSE = [
-    'AAPL',
-    'MSFT',
-    'GOOGL',
-    'AMZN',
-    'NVDA',
-    'TSLA',
-    'COST',
-    'LLY'
+    'AAPL',  # Apple
+    'MSFT',  # Microsoft
+    'GOOGL', # Google
+    'NVDA',  # NVIDIA
+    'COST',  # Costco
+    'LLY',   # Eli Lilly
+    'JPM',   # JPMorgan Chase
+    'V'      # Visa
 ]
 
 # Benchmark for Relative Strength calculation

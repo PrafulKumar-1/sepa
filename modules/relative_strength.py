@@ -14,6 +14,8 @@ def calculate_rs_ratings(tickers: List[str]) -> Dict[str, int]:
     rs_scores = {}
     for ticker, df in all_tickers_data.items():
         if len(df) < 252:  # Ensure at least a year of data
+            # ADD THIS LINE TO SEE WHICH STOCKS ARE SKIPPED AND WHY
+            print(f"  ℹ️ Skipping {ticker}: Found only {len(df)} days of data (252 required).")
             continue
         
         try:
