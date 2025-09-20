@@ -1,17 +1,18 @@
 # config/tickers.py
 
-# A list of tickers to screen.
-# Use this test list to verify the screener is working.
+# A list of tickers to screen (Nifty 50 for the Indian Market).
 TICKER_UNIVERSE = [
-    'AAPL',  # Apple
-    'MSFT',  # Microsoft
-    'GOOGL', # Google
-    'NVDA',  # NVIDIA
-    'COST',  # Costco
-    'LLY',   # Eli Lilly
-    'JPM',   # JPMorgan Chase
-    'V'      # Visa
+    'RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'INFY.NS', 
+    'HINDUNILVR.NS', 'BHARTIARTL.NS', 'SBIN.NS', 'ITC.NS', 'LICI.NS',
+    'KOTAKBANK.NS', 'LT.NS', 'HCLTECH.NS', 'AXISBANK.NS', 'BAJFINANCE.NS',
+    'MARUTI.NS', 'ASIANPAINT.NS', 'SUNPHARMA.NS', 'ADANIENT.NS', 'TITAN.NS',
+    'ULTRACEMCO.NS', 'ONGC.NS', 'TATAMOTORS.NS', 'NTPC.NS', 'ADANIPORTS.NS',
+    'WIPRO.NS', 'POWERGRID.NS', 'COALINDIA.NS', 'BAJAJFINSV.NS', 'NESTLEIND.NS',
+    'GRASIM.NS', 'M&M.NS', 'JSWSTEEL.NS', 'HINDALCO.NS', 'TATASTEEL.NS',
+    'INDUSINDBK.NS', 'ADANIGREEN.NS', 'CIPLA.NS', 'BRITANNIA.NS', 'DRREDDY.NS',
+    'EICHERMOT.NS', 'HEROMOTOCO.NS', 'APOLLOHOSP.NS', 'BAJAJ-AUTO.NS', 
+    'DIVISLAB.NS', 'TECHM.NS', 'UPL.NS', 'BPCL.NS', 'SHREECEM.NS', 'TATACONSUM.NS'
 ]
 
-# Benchmark for Relative Strength calculation
-BENCHMARK_TICKER = 'SPY'
+# Benchmark for Relative Strength calculation (Nifty 50 Index).
+BENCHMARK_TICKER = '^NSEI'
