@@ -1,5 +1,4 @@
 # screener.py
-
 import os
 import re
 from datetime import datetime
@@ -10,44 +9,48 @@ from modules.data_fetcher import RateLimitException
 
 def update_readme(stocks: list):
     """
-    Updates the README.md file with the list of passing stocks.
+    Updates the README.md file with a detailed table of passing stocks.
     """
     readme_path = "README.md"
     
-    # Create the results table in Markdown format
     if stocks:
-        header = "| Ticker |\n|:------:|\n"
-        rows = "".join([f"| {stock} |\n" for stock in stocks])
-        results_table = header + rows
+        # Create a detailed Markdown table
+        header = "| Ticker | RS Rating | Price | Off 52W High | YoY EPS Growth | YoY Sales Growth | ROE |\n"
+        separator = "|:------:|:---------:|:-----:|:--------------:|:--------------:|:----------------:|:---:|\n"
+        rows = ""
+        for stock in stocks:
+            rows += (f"| {stock['ticker']} "
+                     f"| {stock['rs_rating']} "
+                     f"| ${stock['price']:.2f} "
+                     f"| {stock['52w_high_percent_off']}% "
+                     f"| {stock['yoy_eps_growth']} "
+                     f"| {stock['yoy_sales_growth']} "
+                     f"| {stock['roe']} |\n")
+        results_table = header + separator + rows
     else:
         results_table = "No stocks passed the screen on this date."
         
-    # Add a timestamp
     timestamp = f"Last run: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}"
     
-    full_content = f"## Minervini Screener Results\n\n{timestamp}\n\n{results_table}"
-    
     try:
-        with open(readme_path, "r") as f:
+        with open(readme_path, "r", encoding="utf-8") as f:
             content = f.read()
             
-        # Use regex to find and replace the results section
-        # This makes the replacement idempotent and robust
-        pattern = r"()(.*)()"
-        new_content = re.sub(
-            pattern,
-            f"\\1\n{full_content}\n\\3",
-            content,
-            flags=re.DOTALL
+        # Use a more robust regex with markers to replace the results section
+        start_marker = ""
+        end_marker = ""
+        pattern = re.compile(f"{start_marker}(.*){end_marker}", re.DOTALL)
+        
+        new_content = pattern.sub(
+            f"{start_marker}\n\n{timestamp}\n\n{results_table}\n\n{end_marker}",
+            content
         )
         
-        with open(readme_path, "w") as f:
+        with open(readme_path, "w", encoding="utf-8") as f:
             f.write(new_content)
             
         print(f"Successfully updated {readme_path}")
         
-    except FileNotFoundError:
-        print(f"Error: {readme_path} not found.")
     except Exception as e:
         print(f"An error occurred while updating README.md: {e}")
 
@@ -57,13 +60,11 @@ def main():
     """
     print("Starting Minervini Stock Screener...")
     
-    # Get API key from environment variable
     api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
     if not api_key:
         print("Error: ALPHAVANTAGE_API_KEY environment variable not set.")
         return
 
-    # --- Stage 1: Technical Screening ---
     technically_qualified_stocks = run_technical_screen(TICKER_UNIVERSE)
     
     if not technically_qualified_stocks:
@@ -71,16 +72,12 @@ def main():
         update_readme([])
         return
         
-    # --- Stage 2: Fundamental Screening ---
     try:
         final_passing_stocks = run_fundamental_screen(technically_qualified_stocks, api_key)
     except RateLimitException:
         print("Screener halted due to API rate limits. Results may be incomplete.")
-        # In case of rate limit, we still update the README with what we have found so far.
-        # For this implementation, we will treat it as an empty list to avoid partial results.
         final_passing_stocks = []
         
-    # --- Stage 3: Update Report ---
     update_readme(final_passing_stocks)
     
     print("Screener run finished.")
