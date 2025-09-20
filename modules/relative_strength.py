@@ -24,8 +24,7 @@ def calculate_rs_ratings(tickers: List[str]) -> Dict[str, int]:
             price_3m_ago = df['Close'].iloc[-63]
             price_6m_ago = df['Close'].iloc[-126]
             price_9m_ago = df['Close'].iloc[-189]
-            # --- FIX: Correctly index the 12-month ago price ---
-            price_12m_ago = df['Close'].iloc[-252]
+            price_12m_ago = df['Close'].iloc[-250]
 
             # Calculate percentage change
             perf_3m = (price_today / price_3m_ago) - 1
