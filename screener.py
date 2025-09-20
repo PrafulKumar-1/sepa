@@ -60,9 +60,9 @@ def main():
     """
     print("Starting Minervini Stock Screener...")
     
-    api_key = os.environ.get("ALPHAVANTAGE_API_KEY")
+    api_key = os.environ.get("EODHD_API_KEY")
     if not api_key:
-        print("Error: ALPHAVANTAGE_API_KEY environment variable not set.")
+        print("Error: EODHD_API_KEY environment variable not set.")
         return
 
     technically_qualified_stocks = run_technical_screen(TICKER_UNIVERSE)
