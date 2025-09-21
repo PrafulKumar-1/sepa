@@ -59,6 +59,15 @@ def main():
     print("Starting Minervini Stock Screener...")
     
     api_key = os.environ.get("EODHD_API_KEY", "").strip()
+    print("--- DEBUGGING API KEY ---")
+    if api_key:
+        print(f"API Key Found. Length: {len(api_key)}")
+        print(f"First 4 chars: '{api_key[:4]}'")
+        print(f"Last 4 chars: '{api_key[-4:]}'")
+    else:
+        print("API Key is MISSING or EMPTY.")
+    print("-------------------------")
+    
     if not api_key:
         print("Error: EODHD_API_KEY environment variable not set.")
         return
