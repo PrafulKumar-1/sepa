@@ -76,8 +76,8 @@ def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> 
             npm_current_q = eps_current_q / sales_current_q if sales_current_q > 0 else 0
             npm_prev_q = eps_prev_q_1 / sales_prev_q_1 if sales_prev_q_1 > 0 else 0
             
-            cond_leverage = debt_to_equity < 0.5 and debt_to_equity != 0
-            cond_roe = roe > 15
+            cond_leverage = debt_to_equity < 0.75 and debt_to_equity != 0
+            cond_roe = roe > 12
             cond_sales_growth = sales_growth_current > 20
             cond_sales_accel = sales_growth_current > sales_growth_prev_1
             cond_eps_growth = eps_growth_current > 25
