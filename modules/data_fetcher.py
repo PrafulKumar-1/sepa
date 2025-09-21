@@ -4,9 +4,7 @@ import time
 from typing import List, Dict, Any
 
 def get_price_history(tickers: List[str], period: str = "2y") -> Dict[str, Any]:
-    """
-    Fetches historical price data for a list of tickers using yfinance.
-    """
+    # ... (this function is unchanged)
     data = {}
     print(f"Fetching price history for {len(tickers)} tickers...")
     for ticker in tickers:
@@ -28,17 +26,19 @@ def get_yfinance_fundamentals(ticker_symbol: str) -> Dict[str, Any]:
     """
     try:
         stock = yf.Ticker(ticker_symbol)
-        # Fetch all required data in one go
+        # Fetch all required data in one go, now including the balance sheet
         info = stock.info
         income_stmt_q = stock.quarterly_income_stmt
+        balance_sheet_q = stock.quarterly_balance_sheet # <-- ADD THIS LINE
         
-        if not info or income_stmt_q.empty:
+        if not info or income_stmt_q.empty or balance_sheet_q.empty: # <-- UPDATE THIS CHECK
             print(f"  ⚠️ Warning: Could not fetch complete fundamental data for {ticker_symbol}.")
             return {}
 
         return {
             "info": info,
-            "income_stmt_q": income_stmt_q
+            "income_stmt_q": income_stmt_q,
+            "balance_sheet_q": balance_sheet_q # <-- ADD THIS LINE
         }
     except Exception as e:
         print(f"  ❌ An unexpected error occurred fetching yfinance fundamentals for {ticker_symbol}: {e}")
