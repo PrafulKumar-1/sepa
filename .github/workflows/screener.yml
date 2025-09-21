@@ -35,6 +35,7 @@ jobs:
           git add README.md
           # Commit only if there are changes
           if ! git diff --staged --quiet; then
+            git pull --rebase
             git commit -m "Automated screener results update for $(date -u +'%Y-%m-%d')"
             git push
           else
