@@ -5,7 +5,7 @@ from datetime import datetime
 from config.tickers import TICKER_UNIVERSE
 from modules.technical_screener import run_technical_screen
 from modules.fundamental_screener import run_fundamental_screen
-from modules.data_fetcher import RateLimitException
+# The unused 'RateLimitException' import has been removed from here.
 
 def update_readme(stocks: list):
     """
@@ -14,7 +14,6 @@ def update_readme(stocks: list):
     readme_path = "README.md"
     
     if stocks:
-        # Create a detailed Markdown table
         header = "| Ticker | RS Rating | Price | Off 52W High | YoY EPS Growth | YoY Sales Growth | ROE |\n"
         separator = "|:------:|:---------:|:-----:|:--------------:|:--------------:|:----------------:|:---:|\n"
         rows = ""
@@ -36,7 +35,6 @@ def update_readme(stocks: list):
         with open(readme_path, "r", encoding="utf-8") as f:
             content = f.read()
             
-        # Use a more robust regex with markers to replace the results section
         start_marker = ""
         end_marker = ""
         pattern = re.compile(f"{start_marker}(.*){end_marker}", re.DOTALL)
@@ -72,11 +70,9 @@ def main():
         update_readme([])
         return
         
-    try:
-        final_passing_stocks = run_fundamental_screen(technically_qualified_stocks, api_key)
-    except RateLimitException:
-        print("Screener halted due to API rate limits. Results may be incomplete.")
-        final_passing_stocks = []
+    # The old try...except block has been removed.
+    # The new fundamental_screener handles its own errors gracefully.
+    final_passing_stocks = run_fundamental_screen(technically_qualified_stocks, api_key)
         
     update_readme(final_passing_stocks)
     
