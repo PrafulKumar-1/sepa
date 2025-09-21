@@ -1,10 +1,7 @@
 # modules/data_fetcher.py
 import yfinance as yf
-import requests
 import time
 from typing import List, Dict, Any
-
-# --- yfinance Data Fetcher (No Change) ---
 
 def get_price_history(tickers: List[str], period: str = "2y") -> Dict[str, Any]:
     """
@@ -25,29 +22,24 @@ def get_price_history(tickers: List[str], period: str = "2y") -> Dict[str, Any]:
             print(f"  ❌ Error fetching price history for {ticker}: {e}")
     return data
 
-# --- EOD Historical Data Fetcher (New) ---
-
-EOD_BASE_URL = "https://eodhistoricaldata.com/api/fundamentals/"
-
-def get_fundamental_data(ticker: str, api_key: str) -> Dict[str, Any]:
+def get_yfinance_fundamentals(ticker_symbol: str) -> Dict[str, Any]:
     """
-    Fetches fundamental data for a single ticker from EOD Historical Data.
+    Fetches all necessary fundamental data for a ticker using yfinance.
     """
-    url = f"{EOD_BASE_URL}{ticker}?api_token={api_key}"
     try:
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        if not data or isinstance(data, str):
-            print(f"  ⚠️ Warning: API returned empty or invalid data for {ticker}.")
+        stock = yf.Ticker(ticker_symbol)
+        # Fetch all required data in one go
+        info = stock.info
+        income_stmt_q = stock.quarterly_income_stmt
+        
+        if not info or income_stmt_q.empty:
+            print(f"  ⚠️ Warning: Could not fetch complete fundamental data for {ticker_symbol}.")
             return {}
-        return data
-    except requests.exceptions.HTTPError as e:
-        if e.response.status_code == 429: # Too Many Requests
-            print("  ⛔️ FATAL: EODHD API daily limit likely exceeded.")
-        else:
-            print(f"  ❌ HTTP Error fetching fundamentals for {ticker}: {e}")
-        return {}
+
+        return {
+            "info": info,
+            "income_stmt_q": income_stmt_q
+        }
     except Exception as e:
-        print(f"  ❌ An unexpected error occurred fetching fundamentals for {ticker}: {e}")
+        print(f"  ❌ An unexpected error occurred fetching yfinance fundamentals for {ticker_symbol}: {e}")
         return {}

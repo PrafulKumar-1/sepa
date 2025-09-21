@@ -5,12 +5,12 @@ from datetime import datetime
 from config.tickers import TICKER_UNIVERSE
 from modules.technical_screener import run_technical_screen
 from modules.fundamental_screener import run_fundamental_screen
-# The unused 'RateLimitException' import has been removed from here.
 
 def update_readme(stocks: list):
     """
     Updates the README.md file with a detailed table of passing stocks.
     """
+    # ... (this function does not need to be changed) ...
     readme_path = "README.md"
     
     if stocks:
@@ -58,19 +58,8 @@ def main():
     """
     print("Starting Minervini Stock Screener...")
     
-    api_key = os.environ.get("EODHD_API_KEY", "").strip()
-    print("--- DEBUGGING API KEY ---")
-    if api_key:
-        print(f"API Key Found. Length: {len(api_key)}")
-        print(f"First 4 chars: '{api_key[:4]}'")
-        print(f"Last 4 chars: '{api_key[-4:]}'")
-    else:
-        print("API Key is MISSING or EMPTY.")
-    print("-------------------------")
-    
-    if not api_key:
-        print("Error: EODHD_API_KEY environment variable not set.")
-        return
+    # --- API KEY LOGIC REMOVED ---
+    # No API key is needed anymore.
 
     technically_qualified_stocks = run_technical_screen(TICKER_UNIVERSE)
     
@@ -79,9 +68,8 @@ def main():
         update_readme([])
         return
         
-    # The old try...except block has been removed.
-    # The new fundamental_screener handles its own errors gracefully.
-    final_passing_stocks = run_fundamental_screen(technically_qualified_stocks, api_key)
+    # The fundamental screener no longer needs the api_key argument
+    final_passing_stocks = run_fundamental_screen(technically_qualified_stocks)
         
     update_readme(final_passing_stocks)
     
