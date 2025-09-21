@@ -31,12 +31,12 @@ jobs:
       - name: Commit and push if changed
         run: |
           git config --local user.email "prafulsuthar101@gmail.com"
-          git config --local user.name "Praful Suthar"
+          git config --local user.name "prafulkumar"
           git add README.md
-          # Commit only if there are changes
+          # Check if there are changes to commit
           if ! git diff --staged --quiet; then
-            git pull --rebase
             git commit -m "Automated screener results update for $(date -u +'%Y-%m-%d')"
+            git pull --rebase
             git push
           else
             echo "No changes to commit."
