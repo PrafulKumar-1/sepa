@@ -1,15 +1,15 @@
 name: Run Minervini Stock Screener
 
 on:
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch: 
   schedule:
-    - cron: '0 22 * * 1-5' # Runs at 22:00 UTC on weekdays (after US market close)
+    - cron: '0 22 * * 1-5' 
 
 jobs:
   run-screener:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Grants permission to push to the repository
+      contents: write 
 
     steps:
       - name: Checkout repository
@@ -27,15 +27,13 @@ jobs:
 
       - name: Run the screener
         run: python screener.py
-        env:
-          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
 
       - name: Commit and push if changed
         run: |
           git config --local user.email "prafulsuthar101@gmail.com"
-          git config --local user.name "prafulsuthar"
+          git config --local user.name "Praful Suthar"
           git add README.md
-          # Commit only if there are changes. Note the space in "if !"
+          # Commit only if there are changes
           if ! git diff --staged --quiet; then
             git commit -m "Automated screener results update for $(date -u +'%Y-%m-%d')"
             git push

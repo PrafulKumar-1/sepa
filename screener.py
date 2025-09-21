@@ -1,4 +1,3 @@
-# screener.py
 import os
 import re
 from datetime import datetime
@@ -8,26 +7,35 @@ from modules.fundamental_screener import run_fundamental_screen
 
 def update_readme(stocks: list):
     """
-    Updates the README.md file with a detailed table of passing stocks.
+    Updates the README.md file with a detailed profile card for each passing stock.
     """
-    # ... (this function does not need to be changed) ...
     readme_path = "README.md"
     
+    results_content = ""
     if stocks:
-        header = "| Ticker | RS Rating | Price | Off 52W High | YoY EPS Growth | YoY Sales Growth | ROE |\n"
-        separator = "|:------:|:---------:|:-----:|:--------------:|:--------------:|:----------------:|:---:|\n"
-        rows = ""
         for stock in stocks:
-            rows += (f"| {stock['ticker']} "
-                     f"| {stock['rs_rating']} "
-                     f"| ${stock['price']:.2f} "
-                     f"| {stock['52w_high_percent_off']}% "
-                     f"| {stock['yoy_eps_growth']} "
-                     f"| {stock['yoy_sales_growth']} "
-                     f"| {stock['roe']} |\n")
-        results_table = header + separator + rows
+            results_content += f"---\n"
+            results_content += f"### ✅ **{stock['ticker']}**\n\n"
+            
+            results_content += f"**Technical Profile:**\n"
+            results_content += f"* **Price:** ${stock['price']:.2f}\n"
+            results_content += f"* **RS Rating:** {stock['rs_rating']}\n"
+            results_content += f"* **Status:** In Stage 2 Uptrend & VCP Setup\n"
+            results_content += f"* **Details:**\n"
+            results_content += f"    * 52-Week High: ${stock['52w_high']:.2f} ({stock['52w_high_percent_off']}% off high)\n"
+            results_content += f"    * 50-Day SMA: ${stock['sma_50']:.2f}\n"
+            results_content += f"    * 150-Day SMA: ${stock['sma_150']:.2f}\n"
+            results_content += f"    * 200-Day SMA: ${stock['sma_200']:.2f}\n\n"
+
+            results_content += f"**Fundamental Profile:**\n"
+            results_content += f"* **ROE:** {stock['roe']:.1f}%\n"
+            results_content += f"* **Debt/Equity:** {stock['debt_to_equity']:.2f}\n"
+            results_content += f"* **Sales Growth (YoY):** {stock['sales_growth_current']:.1f}% (Accelerating from {stock['sales_growth_prev']:.1f}%)\n"
+            results_content += f"* **EPS Growth (YoY):** {stock['eps_growth_current']:.1f}% (Accelerating from {stock['eps_growth_prev']:.1f}%)\n"
+            results_content += f"* **Profit Margin:** {stock['npm_current']*100:.1f}% (Expanding from {stock['npm_prev']*100:.1f}%)\n"
+        results_content += "---\n"
     else:
-        results_table = "No stocks passed the screen on this date."
+        results_content = "No stocks passed the screen on this date."
         
     timestamp = f"Last run: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}"
     
@@ -40,7 +48,7 @@ def update_readme(stocks: list):
         pattern = re.compile(f"{start_marker}(.*){end_marker}", re.DOTALL)
         
         new_content = pattern.sub(
-            f"{start_marker}\n\n{timestamp}\n\n{results_table}\n\n{end_marker}",
+            f"{start_marker}\n\n{timestamp}\n\n{results_content}\n{end_marker}",
             content
         )
         
@@ -58,9 +66,6 @@ def main():
     """
     print("Starting Minervini Stock Screener...")
     
-    # --- API KEY LOGIC REMOVED ---
-    # No API key is needed anymore.
-
     technically_qualified_stocks = run_technical_screen(TICKER_UNIVERSE)
     
     if not technically_qualified_stocks:
@@ -68,7 +73,6 @@ def main():
         update_readme([])
         return
         
-    # The fundamental screener no longer needs the api_key argument
     final_passing_stocks = run_fundamental_screen(technically_qualified_stocks)
         
     update_readme(final_passing_stocks)
