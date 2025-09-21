@@ -11,7 +11,8 @@ def safe_float(value):
 
 def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Runs a more robust Minervini Fundamental Scorecard using yfinance data.
+    Runs a truly robust Minervini Fundamental Scorecard using yfinance data.
+    This version uses row labels instead of fixed positions for reliability.
     """
     print("Starting fundamental screen...")
     final_passing_stocks = []
@@ -29,35 +30,41 @@ def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> 
 
         info = fundamentals.get("info", {})
         income_stmt_q = fundamentals.get("income_stmt_q")
-        balance_sheet_q = fundamentals.get("balance_sheet_q") # <-- Get balance sheet
+        balance_sheet_q = fundamentals.get("balance_sheet_q")
 
         try:
-            # Get latest 5 quarters of reports
+            # Check for sufficient report history
             if len(income_stmt_q.columns) < 5 or len(balance_sheet_q.columns) < 1:
                 print(f"  [FAIL] {ticker}: Insufficient quarterly reports.")
                 continue
 
             # --- FIX #1: Correctly interpret Debt-to-Equity ---
             # yfinance provides D/E as a percentage, so we divide by 100.
-            debt_to_equity = safe_float(info.get('debtToEquity')) / 100
+            # We also check if the key exists before trying to access it.
+            debt_to_equity = safe_float(info.get('debtToEquity', 0)) / 100
             cond_leverage = debt_to_equity < 0.5 and debt_to_equity != 0
 
-            # --- FIX #2: Reliably calculate Return on Equity (ROE) ---
-            # We calculate it manually from the financials for better accuracy.
-            net_income_ttm = income_stmt_q.iloc[8, 0:4].sum() # Sum of Net Income for last 4 quarters
-            stockholder_equity = safe_float(balance_sheet_q.iloc[:, 0].get('Total Stockholder Equity'))
-            
+            # --- FIX #2: Reliably calculate Return on Equity (ROE) using .loc ---
+            # Use .loc to find rows by name, not by fragile integer position.
+            # Use a try-except block to handle cases where rows are missing.
+            try:
+                net_income_ttm = income_stmt_q.loc['Net Income'].iloc[0:4].sum()
+                stockholder_equity = safe_float(balance_sheet_q.loc['Total Stockholder Equity'].iloc[0])
+            except KeyError as e:
+                print(f"  [FAIL] {ticker}: Missing financial data row: {e}")
+                continue # Skip to the next stock if data is missing
+
             roe = (net_income_ttm / stockholder_equity) * 100 if stockholder_equity > 0 else 0
             cond_roe = roe > 15
 
-            # --- YoY Growth Checks (Unchanged but now using more reliable data) ---
+            # --- YoY Growth Checks using .loc for reliability ---
             latest_q = income_stmt_q.iloc[:, 0]
             prev_q = income_stmt_q.iloc[:, 1]
             yoy_q = income_stmt_q.iloc[:, 4]
 
             sales_current_q = safe_float(latest_q.get('Total Revenue'))
             sales_yoy_q = safe_float(yoy_q.get('Total Revenue'))
-            cond_sales_growth = sales_current_q > (sales_yoy_q * 1.20)
+            cond_sales_growth = sales_current_q > (sales_yoy_q * 1.20) if sales_yoy_q else False
             
             eps_current_q = safe_float(latest_q.get('Net Income'))
             eps_yoy_q = safe_float(yoy_q.get('Net Income'))
@@ -76,7 +83,7 @@ def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> 
             else:
                 reasons = []
                 if not cond_roe: reasons.append(f"ROE={roe:.1f}%")
-                if not cond_leverage: reasons.append(f"D/E={debt_to_equity * 100:.2f}") # Display as %
+                if not cond_leverage: reasons.append(f"D/E={debt_to_equity * 100:.2f}%")
                 if not cond_eps_growth: reasons.append("EPS Growth")
                 if not cond_sales_growth: reasons.append("Sales Growth")
                 if not cond_margin_expansion: reasons.append("Margin Expansion")
@@ -88,3 +95,5 @@ def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> 
             
     print(f"Fundamental screen complete. {len(final_passing_stocks)} stocks passed.")
     return final_passing_stocks
+
+
