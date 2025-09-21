@@ -11,8 +11,8 @@ def safe_float(value):
 
 def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Runs a truly robust Minervini Fundamental Scorecard using yfinance data.
-    This version uses row labels instead of fixed positions for reliability.
+    Final robust version of the Minervini Fundamental Scorecard using yfinance data.
+    Intelligently finds financial data rows by checking multiple common names.
     """
     print("Starting fundamental screen...")
     final_passing_stocks = []
@@ -33,31 +33,39 @@ def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> 
         balance_sheet_q = fundamentals.get("balance_sheet_q")
 
         try:
-            # Check for sufficient report history
             if len(income_stmt_q.columns) < 5 or len(balance_sheet_q.columns) < 1:
                 print(f"  [FAIL] {ticker}: Insufficient quarterly reports.")
                 continue
 
-            # --- FIX #1: Correctly interpret Debt-to-Equity ---
-            # yfinance provides D/E as a percentage, so we divide by 100.
-            # We also check if the key exists before trying to access it.
+            # --- D/E check (no changes) ---
             debt_to_equity = safe_float(info.get('debtToEquity', 0)) / 100
             cond_leverage = debt_to_equity < 0.5 and debt_to_equity != 0
 
-            # --- FIX #2: Reliably calculate Return on Equity (ROE) using .loc ---
-            # Use .loc to find rows by name, not by fragile integer position.
-            # Use a try-except block to handle cases where rows are missing.
-            try:
-                net_income_ttm = income_stmt_q.loc['Net Income'].iloc[0:4].sum()
-                stockholder_equity = safe_float(balance_sheet_q.loc['Total Stockholder Equity'].iloc[0])
-            except KeyError as e:
-                print(f"  [FAIL] {ticker}: Missing financial data row: {e}")
-                continue # Skip to the next stock if data is missing
-
+            # --- FIX: Smarter finder for ROE calculation rows ---
+            # Create a list of possible names for the stockholder equity row
+            equity_row_names = ['Stockholders Equity', 'Total Stockholder Equity', 'Total Equity']
+            net_income_row_name = 'Net Income'
+            
+            # Find the correct equity row name from the balance sheet index
+            found_equity_row = None
+            for name in equity_row_names:
+                if name in balance_sheet_q.index:
+                    found_equity_row = name
+                    break
+            
+            # Check if we found the necessary rows before proceeding
+            if not found_equity_row or net_income_row_name not in income_stmt_q.index:
+                print(f"  [FAIL] {ticker}: Could not find required 'Net Income' or Equity rows.")
+                continue
+            
+            # Calculate ROE using the found row name
+            net_income_ttm = income_stmt_q.loc[net_income_row_name].iloc[0:4].sum()
+            stockholder_equity = safe_float(balance_sheet_q.loc[found_equity_row].iloc[0])
+            
             roe = (net_income_ttm / stockholder_equity) * 100 if stockholder_equity > 0 else 0
             cond_roe = roe > 15
 
-            # --- YoY Growth Checks using .loc for reliability ---
+            # --- YoY Growth Checks (no changes) ---
             latest_q = income_stmt_q.iloc[:, 0]
             prev_q = income_stmt_q.iloc[:, 1]
             yoy_q = income_stmt_q.iloc[:, 4]
@@ -95,5 +103,3 @@ def run_fundamental_screen(technically_passing_stocks: List[Dict[str, Any]]) -> 
             
     print(f"Fundamental screen complete. {len(final_passing_stocks)} stocks passed.")
     return final_passing_stocks
-
-
